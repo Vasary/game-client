@@ -1,0 +1,23 @@
+<div class="container-fluid p-0">
+  <div class="scene">
+    <div class="castle">
+      <div class="row">
+        <div class="col-6 d-flex justify-content-start">
+          <div class="area">
+            <div [attr.data-unit-id]="enemy.id" *ngFor="let enemy of enemies" [@fadeInOut] #unit><app-unit [unit]="enemy"/></div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="area float-end">
+            <div [attr.data-unit-id]="hero.id" *ngFor="let hero of heroes" [@fadeInOut] #unit><app-unit [unit]="hero"/></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="text-center trigger">
+      <button *ngIf="currentUserId != ''" type="button" class="btn btn-warning btn-lg" (click)="attack()">Attack</button>
+      <button *ngIf="currentUserId == ''" type="button" class="btn btn-primary btn-lg" (click)="joinGame()">Join game</button>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,22 @@
+<div class="container-fluid p-5 w-100">
+  <table class="table table-hover">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Nickname</th>
+      <th scope="col">Total hits</th>
+      <th scope="col">Max strike</th>
+      <th scope="col">Rest health</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let score of scores; let i = index">
+      <td>{{ i + 1 }}</td>
+      <td>{{ score.nickname }}</td>
+      <td>{{ score.hits }}</td>
+      <td>{{ score.strongestHit }}</td>
+      <td>{{ score.health }}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>

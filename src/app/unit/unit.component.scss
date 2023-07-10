@@ -1,0 +1,17 @@
+.unit {
+  width: 96px;
+  background: transparent;
+
+  &.died {
+    opacity: 0.5;
+  }
+
+  img {
+    width: 56px;
+    height: 56px;
+  }
+
+  .card-body {
+    padding: 5px;
+  }
+}

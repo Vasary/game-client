@@ -1,0 +1,8 @@
+<div class="text-white">
+  <div class="text-center bg-success" *ngIf="isConnected">
+    <span>Connected</span>
+  </div>
+  <div class="text-center bg-danger" *ngIf="!isConnected">
+    <span>Connection establishing...</span>
+  </div>
+</div>
