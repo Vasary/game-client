@@ -9,6 +9,6 @@ export class Unit {
   }
 
   public isDied(): boolean {
-    return this.health === 0;
+    return this.health <= 0;
   }
 }

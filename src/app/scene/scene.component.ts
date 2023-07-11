@@ -1,7 +1,7 @@
 import {Component, ElementRef, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {Unit} from "../model/unit/unit";
 import {animateAttack, animateDamage, fadeInOut} from './animation/animation';
-import {getUnitArea, pickTarget, pickTriggeredUnit} from "./helper/helper";
+import {getUnitArea} from "./helper/helper";
 import {NgbModal, NgbModalConfig} from '@ng-bootstrap/ng-bootstrap';
 import {ScoresComponent} from "../scores/scores.component";
 import {LoginComponent} from "../login/login.component";
@@ -32,8 +32,14 @@ export class SceneComponent implements OnInit {
 
   ngOnInit(): void {
     this.api.state().subscribe(state => this.updateState(state))
-
-    //this.openScoresTable()
+    this.api.fightEvents().subscribe(fightEvent => {
+      this.applyDamage(fightEvent.enemy);
+      this.applyAttackAnimation(fightEvent.hero)
+    })
+    this.api.scores().subscribe(scores => {
+      console.log(scores)
+      console.log('Game Over')
+    })
   }
 
   joinGame(): void {
@@ -50,26 +56,11 @@ export class SceneComponent implements OnInit {
   }
 
   attack(): void {
-    // choose alive enemy and send command to socket
-    // shake trigger unit
-
-    try {
-      const enemy = pickTarget(this.enemies)
-      const hero = pickTriggeredUnit(this.currentUserId, this.heroes)
-      this.sendAttackCommand(enemy, hero)
-
-      // Move to command handlers when we will have event from backend
-      this.applyDamage(enemy, hero);
-      this.applyAttackAnimation(hero)
-
-
-    } catch (error) {
-      this.modalService.open(ScoresComponent);
-    }
+    this.sendAttackCommand()
   }
 
-  sendAttackCommand(triggerUnit: Unit, targetUnit: Unit): void {
-    console.log(triggerUnit.title + ' -> ' + targetUnit.title + ' with power ' + triggerUnit.power)
+  sendAttackCommand(): void {
+    this.api.unitAttack()
   }
 
   private openScoresTable(): void {
@@ -87,10 +78,7 @@ export class SceneComponent implements OnInit {
     area.nativeElement.animate(animation.transitions, animation.params);
   }
 
-  private applyDamage(enemy: Unit, hero: Unit) {
-    const healthRest = enemy.health - hero.power;
-    enemy.health = healthRest <= 0 ? 0 : healthRest;
-
+  private applyDamage(enemy: Unit) {
     const area = getUnitArea(enemy, this.elements);
     const animation = animateDamage();
 
@@ -98,22 +86,40 @@ export class SceneComponent implements OnInit {
   }
 
   private updateState(state: State) {
-    // No replace -> update
+    const updateUnit = (updated: Unit, list: Unit[]) => {
+      const unit = list.filter(u => u.id === updated.id);
 
-    const updateEnemy = (enemy: Unit) => {
-      this.enemies.push(new Unit(enemy.id, enemy.health, enemy.power, enemy.title, enemy.avatar))
+      if (unit.length === 0) {
+        const unit: Unit = new Unit(updated.id, updated.health, updated.power, updated.title, updated.avatar);
+
+        list.push(unit)
+      } else {
+        unit[0].health = updated.health;
+        unit[0].power = updated.power;
+        unit[0].title = updated.title;
+        unit[0].avatar = updated.avatar;
+      }
     }
 
-    const updateHero = (hero: Unit) => {
-      this.heroes.push(new Unit(hero.id, hero.health, hero.power, hero.title, hero.avatar))
+    const updateList = (states: Unit[], list: Unit[]) => {
+      let checkedId: string[] = [];
+      for (let hero of states) {
+        updateUnit(hero, list)
+        checkedId.push(hero.id)
+      }
+
+      for (const stageHero of list) {
+        if (!checkedId.includes(stageHero.id)) {
+          const position = list.findIndex(u => u.id === stageHero.id);
+
+          if (position > -1) {
+            list.splice(position, 1);
+          }
+        }
+      }
     }
 
-    this.enemies = [];
-    this.heroes = [];
-
-    state.enemies.forEach(enemy => updateEnemy(enemy));
-    state.heroes.forEach(hero => updateHero(hero));
-
-    console.log(state)
+    updateList(state.heroes, this.heroes)
+    updateList(state.enemies, this.enemies)
   }
 }

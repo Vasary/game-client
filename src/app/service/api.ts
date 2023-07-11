@@ -28,19 +28,31 @@ export class ApiService {
     return this.socket.connected;
   }
 
-  state(){
-    return  new Observable((observer: Observer<any>)=>{
-      this.socket.on('game.state', (message:string)=>{
+  state(): Observable<any> {
+    return new Observable((observer: Observer<any>) => {
+      this.socket.on('game.state', (message: string) => {
         observer.next(message)
       })
     })
   }
 
-  public events = () => {
-    this.socket.on('game.state', (message) => {
-      this.message$.next(message);
-    });
+  unitAttack() {
+    this.socket.emit('unit.attack');
+  }
 
-    return this.message$.asObservable();
-  };
+  fightEvents(): Observable<any> {
+    return new Observable((observer: Observer<any>) => {
+      this.socket.on('unit.attack', (message: string) => {
+        observer.next(message)
+      })
+    })
+  }
+
+  scores(): Observable<any> {
+    return new Observable((observer: Observer<any>) => {
+      this.socket.on('game.over', (message: string) => {
+        observer.next(message)
+      })
+    })
+  }
 }

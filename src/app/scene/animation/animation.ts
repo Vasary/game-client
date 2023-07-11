@@ -1,5 +1,4 @@
 import {animate, AnimationTriggerMetadata, style, transition, trigger} from "@angular/animations";
-import {observable} from "rxjs";
 
 export function fadeInOut(timingIn: number, timingOut: number, height: boolean = false): AnimationTriggerMetadata  {
   return trigger('fadeInOut', [
