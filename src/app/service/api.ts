@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Observable, Observer} from 'rxjs';
 import {io} from "socket.io-client";
 
 
@@ -26,6 +26,14 @@ export class ApiService {
 
   public isConnected(): boolean {
     return this.socket.connected;
+  }
+
+  state(){
+    return  new Observable((observer: Observer<any>)=>{
+      this.socket.on('game.state', (message:string)=>{
+        observer.next(message)
+      })
+    })
   }
 
   public events = () => {

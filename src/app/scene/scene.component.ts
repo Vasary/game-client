@@ -8,6 +8,7 @@ import {LoginComponent} from "../login/login.component";
 import {ApiService} from "../service/api";
 import {v4} from 'uuid';
 import {Score} from "../model/scores/score";
+import {State} from "../model/state/state";
 
 @Component({
   selector: 'app-scene',
@@ -30,9 +31,9 @@ export class SceneComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.api.events().subscribe(state => console.log(state))
+    this.api.state().subscribe(state => this.updateState(state))
 
-    this.openScoresTable()
+    //this.openScoresTable()
   }
 
   joinGame(): void {
@@ -63,7 +64,6 @@ export class SceneComponent implements OnInit {
 
 
     } catch (error) {
-      // Base on backend api call
       this.modalService.open(ScoresComponent);
     }
   }
@@ -76,12 +76,6 @@ export class SceneComponent implements OnInit {
     const scores = this.modalService.open(ScoresComponent);
 
     const scoresData: Score[] = [];
-
-    scoresData.push(new Score('Viktor', 1000, 50, 1000));
-    scoresData.push(new Score('Viktor', 1000, 50, 1000));
-    scoresData.push(new Score('Viktor', 1000, 50, 1000));
-    scoresData.push(new Score('Viktor', 1000, 50, 1000));
-    scoresData.push(new Score('Viktor', 1000, 50, 1000));
 
     scores.componentInstance.scores = scoresData;
   }
@@ -101,5 +95,25 @@ export class SceneComponent implements OnInit {
     const animation = animateDamage();
 
     area.nativeElement.animate(animation.transitions, animation.params);
+  }
+
+  private updateState(state: State) {
+    // No replace -> update
+
+    const updateEnemy = (enemy: Unit) => {
+      this.enemies.push(new Unit(enemy.id, enemy.health, enemy.power, enemy.title, enemy.avatar))
+    }
+
+    const updateHero = (hero: Unit) => {
+      this.heroes.push(new Unit(hero.id, hero.health, hero.power, hero.title, hero.avatar))
+    }
+
+    this.enemies = [];
+    this.heroes = [];
+
+    state.enemies.forEach(enemy => updateEnemy(enemy));
+    state.heroes.forEach(hero => updateHero(hero));
+
+    console.log(state)
   }
 }
