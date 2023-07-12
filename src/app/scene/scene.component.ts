@@ -1,5 +1,5 @@
 import {Component, ElementRef, OnInit, QueryList, ViewChildren} from '@angular/core';
-import {Unit} from "../model/unit/unit";
+import {Team, Unit} from "../model/unit/unit";
 import {animateAttack, animateDamage, fadeInOut} from './animation/animation';
 import {getUnitArea} from "./helper/helper";
 import {NgbModal, NgbModalConfig} from '@ng-bootstrap/ng-bootstrap';
@@ -18,9 +18,10 @@ import {State} from "../model/state/state";
   providers: [NgbModalConfig, NgbModal],
 })
 export class SceneComponent implements OnInit {
-  currentUserId: string = '';
-  heroes: Unit[] = [];
-  enemies: Unit[] = [];
+  player: Unit | null;
+  gameOver: boolean = false;
+  units: Unit[] = [];
+
   @ViewChildren('unit') elements!: QueryList<ElementRef>;
 
   constructor(config: NgbModalConfig, private modalService: NgbModal, private api: ApiService) {
@@ -28,17 +29,22 @@ export class SceneComponent implements OnInit {
     config.keyboard = false;
     config.centered = true
     config.size = 'lg';
+    this.player = null;
   }
 
   ngOnInit(): void {
+    this.api.player().subscribe(player => this.player = player)
     this.api.state().subscribe(state => this.updateState(state))
+
     this.api.fightEvents().subscribe(fightEvent => {
-      this.applyDamage(fightEvent.enemy);
-      this.applyAttackAnimation(fightEvent.hero)
+      this.applyDamage(fightEvent);
+      this.applyAttackAnimation(fightEvent.trigger)
+
     })
     this.api.scores().subscribe(scores => {
-      console.log(scores)
-      console.log('Game Over')
+      this.openScoresTable(scores);
+      this.gameOver = true;
+      this.player = null;
     })
   }
 
@@ -46,29 +52,19 @@ export class SceneComponent implements OnInit {
     const loginForm = this.modalService.open(LoginComponent);
 
     loginForm.componentInstance.output.subscribe((form: any) => {
-      const id: string = v4();
-
-      this.api.joinPlayer(form.username, id);
-      this.currentUserId = id;
-
+      this.api.joinPlayer(form.username, v4());
       loginForm.close();
     })
   }
 
   attack(): void {
-    this.sendAttackCommand()
+    this.api.triggerAttack()
   }
 
-  sendAttackCommand(): void {
-    this.api.unitAttack()
-  }
+  private openScoresTable(scores: Score[]): void {
+    const scoresComponent = this.modalService.open(ScoresComponent);
 
-  private openScoresTable(): void {
-    const scores = this.modalService.open(ScoresComponent);
-
-    const scoresData: Score[] = [];
-
-    scores.componentInstance.scores = scoresData;
+    scoresComponent.componentInstance.scores = scores;
   }
 
   private applyAttackAnimation(unit: Unit): void {
@@ -78,19 +74,27 @@ export class SceneComponent implements OnInit {
     area.nativeElement.animate(animation.transitions, animation.params);
   }
 
-  private applyDamage(enemy: Unit) {
-    const area = getUnitArea(enemy, this.elements);
+  private applyDamage(event: any) {
+    const targets = this.units.filter(e => e.id === event.target.id)
+    if (targets.length === 0 || targets.length > 1) {
+      throw new Error('Invalid target')
+    }
+
+    targets[0].applyDamage(event.attackPower)
+
+    const area = getUnitArea(event.target, this.elements);
     const animation = animateDamage();
 
     area.nativeElement.animate(animation.transitions, animation.params);
   }
 
   private updateState(state: State) {
-    const updateUnit = (updated: Unit, list: Unit[]) => {
+    let checkedId: string[] = [];
+    const updateUnit = (updated: Unit, list: Unit[], team: Team) => {
       const unit = list.filter(u => u.id === updated.id);
 
       if (unit.length === 0) {
-        const unit: Unit = new Unit(updated.id, updated.health, updated.power, updated.title, updated.avatar);
+        const unit: Unit = new Unit(updated.id, updated.health, updated.power, updated.title, updated.avatar, team);
 
         list.push(unit)
       } else {
@@ -101,25 +105,33 @@ export class SceneComponent implements OnInit {
       }
     }
 
-    const updateList = (states: Unit[], list: Unit[]) => {
-      let checkedId: string[] = [];
+    const updateList = (states: Unit[], list: Unit[], team: Team) => {
       for (let hero of states) {
-        updateUnit(hero, list)
+        updateUnit(hero, list, team)
         checkedId.push(hero.id)
-      }
-
-      for (const stageHero of list) {
-        if (!checkedId.includes(stageHero.id)) {
-          const position = list.findIndex(u => u.id === stageHero.id);
-
-          if (position > -1) {
-            list.splice(position, 1);
-          }
-        }
       }
     }
 
-    updateList(state.heroes, this.heroes)
-    updateList(state.enemies, this.enemies)
+    updateList(state.heroes, this.units, 'Heroes')
+    updateList(state.enemies, this.units, 'Villains')
+
+    for (const stageHero of this.units) {
+      if (!checkedId.includes(stageHero.id)) {
+        const position = this.units.findIndex(u => u.id === stageHero.id);
+
+        if (position > -1) {
+          this.units.splice(position, 1);
+        }
+      }
+    }
+  }
+
+  get villains(): Unit[] {
+    return this.units.filter(u => u.team === 'Villains');
+  }
+
+
+  get heroes(): Unit[] {
+    return this.units.filter(u => u.team === 'Heroes');
   }
 }

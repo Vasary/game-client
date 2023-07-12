@@ -1,4 +1,5 @@
 <div class="unit" [class.died]="unit.isDied()">
+  <div class="damage text-danger text-center" *ngIf="unit.damaged">-{{ unit.damaged }}</div>
   <div class="card">
     <div class="card-body text-center">
       <span class="card-title">{{ unit.title }}</span>
