@@ -1,9 +1,18 @@
 export class Score {
+  public triggerId: string;
+  public targetId: string;
+  public triggerHit: number;
+  public targetHealth: number;
+
   constructor(
-    public nickname: string,
-    public hits: number,
-    public strongestHit: number,
-    public health: number,
+    triggerId: string,
+    targetId: string,
+    triggerHit: number,
+    targetHealth: number,
   ) {
+    this.triggerId = triggerId;
+    this.targetId = targetId;
+    this.targetHealth = targetHealth;
+    this.triggerHit = triggerHit
   }
 }

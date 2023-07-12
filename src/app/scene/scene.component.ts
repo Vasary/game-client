@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, QueryList, ViewChildren} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {Team, Unit} from "../model/unit/unit";
 import {animateAttack, animateDamage, fadeInOut} from './animation/animation';
 import {getUnitArea} from "./helper/helper";
@@ -17,7 +17,7 @@ import {State} from "../model/state/state";
   animations: [fadeInOut(700, 700, false)],
   providers: [NgbModalConfig, NgbModal],
 })
-export class SceneComponent implements OnInit {
+export class SceneComponent implements OnInit, OnDestroy {
   player: Unit | null;
   gameOver: boolean = false;
   units: Unit[] = [];
@@ -32,20 +32,37 @@ export class SceneComponent implements OnInit {
     this.player = null;
   }
 
+  ngOnDestroy() {
+    // free sockets
+  }
+
   ngOnInit(): void {
     this.api.player().subscribe(player => this.player = player)
     this.api.state().subscribe(state => this.updateState(state))
 
     this.api.fightEvents().subscribe(fightEvent => {
-      this.applyDamage(fightEvent);
-      this.applyAttackAnimation(fightEvent.trigger)
+      const target = this.units.filter(target => target.id === fightEvent.target.id)[0]
+      const trigger = this.units.filter(trigger => trigger.id === fightEvent.trigger.id)[0]
+      const power = fightEvent.attackPower;
+
+      this.applyAttackAnimation(trigger)
+      this.applyDamage(target, power);
 
     })
-    this.api.scores().subscribe(scores => {
-      this.openScoresTable(scores);
-      this.gameOver = true;
-      this.player = null;
+    this.api.scores().subscribe(state => {
+      console.log(state)
+      this.openScoresTable(state.scores);
+      this.stopGame();
     })
+  }
+
+  isGameOver(): boolean {
+    return this.villains.filter(v => v.health > 0).length === 0 || this.heroes.filter(h => h.health > 0).length === 0;
+  }
+
+  stopGame(): void {
+    this.gameOver = true;
+    this.player = null;
   }
 
   joinGame(): void {
@@ -69,20 +86,16 @@ export class SceneComponent implements OnInit {
 
   private applyAttackAnimation(unit: Unit): void {
     const area = getUnitArea(unit, this.elements);
-    const animation = animateAttack();
+    const animation = animateAttack(unit.team);
 
     area.nativeElement.animate(animation.transitions, animation.params);
   }
 
-  private applyDamage(event: any) {
-    const targets = this.units.filter(e => e.id === event.target.id)
-    if (targets.length === 0 || targets.length > 1) {
-      throw new Error('Invalid target')
-    }
+  private applyDamage(target: Unit, power: number) {
 
-    targets[0].applyDamage(event.attackPower)
+    target.applyDamage(power)
 
-    const area = getUnitArea(event.target, this.elements);
+    const area = getUnitArea(target, this.elements);
     const animation = animateDamage();
 
     area.nativeElement.animate(animation.transitions, animation.params);
@@ -113,11 +126,11 @@ export class SceneComponent implements OnInit {
     }
 
     updateList(state.heroes, this.units, 'Heroes')
-    updateList(state.enemies, this.units, 'Villains')
+    updateList(state.villains, this.units, 'Villains')
 
-    for (const stageHero of this.units) {
-      if (!checkedId.includes(stageHero.id)) {
-        const position = this.units.findIndex(u => u.id === stageHero.id);
+    for (const unit of this.units) {
+      if (!checkedId.includes(unit.id)) {
+        const position = this.units.findIndex(u => u.id === unit.id);
 
         if (position > -1) {
           this.units.splice(position, 1);

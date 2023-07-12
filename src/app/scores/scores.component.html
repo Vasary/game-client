@@ -12,10 +12,10 @@
     <tbody>
     <tr *ngFor="let score of scores; let i = index">
       <td>{{ i + 1 }}</td>
-      <td>{{ score.nickname }}</td>
-      <td>{{ score.hits }}</td>
-      <td>{{ score.strongestHit }}</td>
-      <td>{{ score.health }}</td>
+      <td>{{ score.triggerId   }}</td>
+      <td>{{ score.targetId }}</td>
+      <td>{{ score.triggerHit }}</td>
+      <td>{{ score.targetHealth }}</td>
     </tr>
     </tbody>
   </table>

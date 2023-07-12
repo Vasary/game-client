@@ -1,4 +1,5 @@
 import {animate, AnimationTriggerMetadata, style, transition, trigger} from "@angular/animations";
+import {Team} from "../../model/unit/unit";
 
 export function fadeInOut(timingIn: number, timingOut: number, height: boolean = false): AnimationTriggerMetadata {
   return trigger('fadeInOut', [
@@ -12,13 +13,17 @@ export function fadeInOut(timingIn: number, timingOut: number, height: boolean =
   ]);
 }
 
-export function animateAttack(): any {
+export function animateAttack(direction: Team): any {
+  const value = direction === 'Heroes' ? -6 : 6;
+
+  console.log(value)
+
   return {
     transitions: [
-      {transform: 'translateX(-6rem)'},
+      {transform: 'translateX(' + value + 'rem)'},
       {transform: 'scale(1.1)'},
       {transform: 'scale(1)'},
-      {transform: 'translateX(  0rem)'},
+      {transform: 'translateX(0rem)'},
     ],
     params: {
       duration: 350,
