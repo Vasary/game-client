@@ -1,23 +1,23 @@
-import {Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren} from '@angular/core';
-import {Team, Unit} from "../model/unit/unit";
+import {Component, ElementRef, OnInit, QueryList, ViewChildren} from '@angular/core';
+import {Unit} from "../model/unit/unit";
 import {animateAttack, animateDamage, fadeInOut} from './animation/animation';
-import {getUnitArea} from "./helper/helper";
+import {createPlayer, createScore, createUnit, getUnitArea, updateUnitWithServerData} from "./helper/helper";
 import {NgbModal, NgbModalConfig} from '@ng-bootstrap/ng-bootstrap';
 import {ScoresComponent} from "../scores/scores.component";
 import {LoginComponent} from "../login/login.component";
 import {ApiService} from "../service/api";
-import {v4} from 'uuid';
 import {Score} from "../model/scores/score";
-import {State} from "../model/state/state";
+import {ServerScores, ServerState, ServerUnit} from "../service/contract/contracts";
+import {Team} from "../types/types";
 
 @Component({
   selector: 'app-scene',
   templateUrl: './scene.component.html',
   styleUrls: ['./scene.component.scss'],
-  animations: [fadeInOut(700, 700, false)],
+  animations: [fadeInOut()],
   providers: [NgbModalConfig, NgbModal],
 })
-export class SceneComponent implements OnInit, OnDestroy {
+export class SceneComponent implements OnInit {
   player: Unit | null;
   gameOver: boolean = false;
   units: Unit[] = [];
@@ -32,26 +32,30 @@ export class SceneComponent implements OnInit, OnDestroy {
     this.player = null;
   }
 
-  ngOnDestroy() {
-    // free sockets
-  }
-
   ngOnInit(): void {
-    this.api.player().subscribe(player => this.player = player)
+    this.api.player().subscribe(player => this.player = createPlayer(player))
     this.api.state().subscribe(state => this.updateState(state))
 
-    this.api.fightEvents().subscribe(fightEvent => {
-      const target = this.units.filter(target => target.id === fightEvent.target.id)[0]
-      const trigger = this.units.filter(trigger => trigger.id === fightEvent.trigger.id)[0]
-      const power = fightEvent.attackPower;
+    this.api.fightEvents().subscribe(event => {
+      const targets = this.units.filter(target => target.id === event.target.id)
+      const triggers = this.units.filter(trigger => trigger.id === event.trigger.id)
+      const power = event.attackPower;
+
+      if (targets.length === 0 || triggers.length === 0) {
+        throw new Error('Invalid attack event declaration')
+      }
+
+      // update player health
+
+      const trigger = triggers[0];
+      const target = targets[0];
 
       this.applyAttackAnimation(trigger)
       this.applyDamage(target, power);
-
     })
-    this.api.scores().subscribe(state => {
-      console.log(state)
-      this.openScoresTable(state.scores);
+
+    this.api.scores().subscribe(scores => {
+      this.openScoresTable(scores);
       this.stopGame();
     })
   }
@@ -69,7 +73,7 @@ export class SceneComponent implements OnInit, OnDestroy {
     const loginForm = this.modalService.open(LoginComponent);
 
     loginForm.componentInstance.output.subscribe((form: any) => {
-      this.api.joinPlayer(form.username, v4());
+      this.api.joinPlayer(form.username);
       loginForm.close();
     })
   }
@@ -78,8 +82,11 @@ export class SceneComponent implements OnInit, OnDestroy {
     this.api.triggerAttack()
   }
 
-  private openScoresTable(scores: Score[]): void {
+  private openScoresTable(serverScores: ServerScores): void {
     const scoresComponent = this.modalService.open(ScoresComponent);
+
+    let scores: Score[] = [];
+    serverScores.scores.forEach(serverScore => scores.push(createScore(serverScore)))
 
     scoresComponent.componentInstance.scores = scores;
   }
@@ -101,26 +108,23 @@ export class SceneComponent implements OnInit, OnDestroy {
     area.nativeElement.animate(animation.transitions, animation.params);
   }
 
-  private updateState(state: State) {
+  private updateState(state: ServerState) {
     let checkedId: string[] = [];
-    const updateUnit = (updated: Unit, list: Unit[], team: Team) => {
-      const unit = list.filter(u => u.id === updated.id);
+    const updateUnit = (serverUnit: ServerUnit, list: Unit[], team: Team) => {
+      const units = list.filter(u => u.id === serverUnit.id);
 
-      if (unit.length === 0) {
-        const unit: Unit = new Unit(updated.id, updated.health, updated.power, updated.title, updated.avatar, team);
-
-        list.push(unit)
-      } else {
-        unit[0].health = updated.health;
-        unit[0].power = updated.power;
-        unit[0].title = updated.title;
-        unit[0].avatar = updated.avatar;
-      }
+      units.length === 0
+        ? list.push(createUnit(serverUnit, team))
+        : updateUnitWithServerData(serverUnit, units[0])
     }
 
-    const updateList = (states: Unit[], list: Unit[], team: Team) => {
-      for (let hero of states) {
+    const updateList = (serverUnits: ServerUnit[], list: Unit[], team: Team) => {
+      for (let hero of serverUnits) {
         updateUnit(hero, list, team)
+        if (hero.id === this.player?.id) {
+          this.player.health = hero.health;
+        }
+
         checkedId.push(hero.id)
       }
     }
@@ -142,7 +146,6 @@ export class SceneComponent implements OnInit, OnDestroy {
   get villains(): Unit[] {
     return this.units.filter(u => u.team === 'Villains');
   }
-
 
   get heroes(): Unit[] {
     return this.units.filter(u => u.team === 'Heroes');

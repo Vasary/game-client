@@ -19,9 +19,10 @@
       </div>
     </div>
     <div class="text-center trigger">
-      <button *ngIf="player && !this.gameOver" type="button" class="btn btn-warning btn-lg" (click)="attack()">Attack
-      </button>
       <button *ngIf="!player" type="button" class="btn btn-primary btn-lg" (click)="joinGame()">Join game</button>
     </div>
+  </div>
+  <div *ngIf="player" class="player-panel">
+    <app-player-panel [player]="(player)" (output)="attack()" />
   </div>
 </div>

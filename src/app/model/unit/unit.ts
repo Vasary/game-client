@@ -1,9 +1,8 @@
-export type Team = 'Heroes' | 'Villains';
+import {Team, Timer} from "../../types/types";
 
 export class Unit {
   damaged: number | null = null;
-
-  timer: null | ReturnType<typeof setTimeout> = null;
+  timer: null | Timer = null;
 
   constructor(
     public id: string,
@@ -25,7 +24,10 @@ export class Unit {
       this.damaged = null;
     }
 
-    this.damaged = value;
     this.timer = setTimeout(() => this.damaged = null, 500);
+
+    this.damaged = value;
+
+    this.health = this.health - value < 0 ? 0 : this.health - value;
   }
 }

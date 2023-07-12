@@ -1,22 +1,20 @@
 import {animate, AnimationTriggerMetadata, style, transition, trigger} from "@angular/animations";
-import {Team} from "../../model/unit/unit";
+import {Team} from "../../types/types";
 
-export function fadeInOut(timingIn: number, timingOut: number, height: boolean = false): AnimationTriggerMetadata {
+export function fadeInOut(): AnimationTriggerMetadata {
   return trigger('fadeInOut', [
     transition(':enter', [
-      style(height ? {opacity: 0, height: 0,} : {opacity: 0,}),
-      animate(timingIn, style(height ? {opacity: 1, height: 'fit-content'} : {opacity: 1,})),
+      style({opacity: 0}),
+      animate(700, style({opacity: 1})),
     ]),
     transition(':leave', [
-      animate(timingOut, style(height ? {opacity: 0, height: 0,} : {opacity: 0,})),
+      animate(700, style({opacity: 0})),
     ])
   ]);
 }
 
 export function animateAttack(direction: Team): any {
   const value = direction === 'Heroes' ? -6 : 6;
-
-  console.log(value)
 
   return {
     transitions: [

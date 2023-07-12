@@ -11,6 +11,7 @@ import {NgOptimizedImage} from "@angular/common";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {ScoresComponent} from './scores/scores.component';
 import {SocketIoConfig, SocketIoModule} from 'ngx-socket-io';
+import { PlayerPanelComponent } from './scene/player-panel/player-panel.component';
 
 const config: SocketIoConfig = {url: 'http://localhost:8080', options: {}};
 
@@ -21,6 +22,7 @@ const config: SocketIoConfig = {url: 'http://localhost:8080', options: {}};
     LoginComponent,
     SceneComponent,
     ScoresComponent,
+    PlayerPanelComponent,
   ],
   imports: [
     BrowserModule,
