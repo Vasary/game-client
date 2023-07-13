@@ -1,14 +1,7 @@
 <div class="panel p-2">
-  <div class="row text-center p-1">
+  <div class="row text-center">
     <div class="col-12">
-      <div>{{ player.title }} {{ player.health }} </div>
-      <ul class="list-group list-group-flush mt-2">
-        <li class="list-group-item">
-          <div class="progress" role="progressbar">
-            <div class="progress-bar" [style.width]="player.health + '%'"></div>
-          </div>
-        </li>
-      </ul>
+      <div>{{ player.title }}</div>
     </div>
   </div>
   <hr>
@@ -22,6 +15,17 @@
     </div>
     <div class="col-6">
       <button [disabled]="reload" type="button" class="btn btn-warning w-100" (click)="attack()">Attack</button>
+    </div>
+  </div>
+  <div class="row text-center">
+    <div class="col-12">
+      <ul class="list-group list-group-flush mt-2">
+        <li class="list-group-item">
+          <div class="progress" role="progressbar">
+            <div class="progress-bar" [style.width]="player.health + '%'"></div>
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
 </div>

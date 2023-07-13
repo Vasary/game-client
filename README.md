@@ -1,27 +1,31 @@
-# Client
+# Castle Bridge (Alpha)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.4.
+Простая многопользовательская игра по типу сражения. Команда справа является командой героев, команда слева является злодеями. Цель игры победить противника. Побеждает та команда, в которой остался хотя бы один живой персонаж. 
 
-## Development server
+![Main](docs/images/img1.png)
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Запуск
 
-## Code scaffolding
+```bash
+# npm install
+# npm run start
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Далее отрыть игру [http://localhost:4200](http://localhost:4200), нажать на присоединиться к игре. Когда в игру зайдет первый игрок, начнется обратный
+отсчет до того как заманда злодеев начнет атаковать команду героев. Так же игра начнется сразу если любой герой до окончания отсчета нанесет удар по противнику.
 
-## Build
+## Важные моменты
+- Враги появлются каждый когда начинается игра в случайном порядке
+- Обновление страницы сброссит вашу сессию и ваш персонаж покинет арену 
+- Для атаки можно использовать клавишу пробел
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Получение урона
+Когда персонаж получает урон, на него изображении появляется индикатор сколько единиц здоровья было получено.
+Единицы силы удара назначаются в момент регистрации игрока и выбираются в случайном пордяке. 
+![Hit](docs/images/img2.png)
 
-## Running unit tests
+## Нанесение урона
+Для того что бы нанести удар, можно нажать клавишу пробел или нажать на кнопку attack. Следует учитывать, то после каждой атаки персонажу требуется время на подготовку следующего удара. 
+Чем выше сила удара, тем больше времени требуется для подготовки следующего. 
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+![Hit](docs/images/img3.png)
