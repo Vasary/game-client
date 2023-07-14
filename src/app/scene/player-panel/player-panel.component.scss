@@ -4,6 +4,10 @@
   width: 800px;
   margin: 0 auto;
 
+  &.died {
+    opacity: 0.5;
+  }
+
   img {
     width: 56px;
     height: 56px;

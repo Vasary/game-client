@@ -19,8 +19,9 @@ import {Team} from "../types/types";
 })
 export class SceneComponent implements OnInit {
   player: Unit | null;
-  gameOver: boolean = false;
   units: Unit[] = [];
+  isOver: boolean = false;
+  isStarted: boolean = false;
 
   @ViewChildren('unit') elements!: QueryList<ElementRef>;
 
@@ -45,8 +46,6 @@ export class SceneComponent implements OnInit {
         throw new Error('Invalid attack event declaration')
       }
 
-      // update player health
-
       const trigger = triggers[0];
       const target = targets[0];
 
@@ -65,7 +64,7 @@ export class SceneComponent implements OnInit {
   }
 
   stopGame(): void {
-    this.gameOver = true;
+    this.isOver = true;
     this.player = null;
   }
 
@@ -110,6 +109,9 @@ export class SceneComponent implements OnInit {
 
   private updateState(state: ServerState) {
     let checkedId: string[] = [];
+    this.isOver = state.isOver;
+    this.isStarted = state.isStarted;
+
     const updateUnit = (serverUnit: ServerUnit, list: Unit[], team: Team) => {
       const units = list.filter(u => u.id === serverUnit.id);
 

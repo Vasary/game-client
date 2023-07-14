@@ -12,6 +12,8 @@ export interface ServerUnit extends PlayerType {
 export interface ServerState {
   heroes: ServerUnit[];
   villains: ServerUnit[];
+  isOver: boolean;
+  isStarted: boolean;
 }
 
 export interface AttackEvent {

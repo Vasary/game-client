@@ -1,4 +1,4 @@
-<div class="panel p-2">
+<div class="panel p-2" [style.died]="player.health <= 0">
   <div class="row text-center">
     <div class="col-12">
       <div>{{ player.title }}</div>
@@ -14,7 +14,7 @@
       <div class="align-middle">Weapon reload speed: {{ reloadTime }} ms</div>
     </div>
     <div class="col-6">
-      <button [disabled]="reload" type="button" class="btn btn-warning w-100" (click)="attack()">Attack</button>
+      <button [disabled]="reload || player.health <= 0" type="button" class="btn btn-warning w-100" (click)="attack()">Attack</button>
     </div>
   </div>
   <div class="row text-center">

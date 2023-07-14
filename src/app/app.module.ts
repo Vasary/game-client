@@ -11,7 +11,11 @@ import {NgOptimizedImage} from "@angular/common";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {ScoresComponent} from './scores/scores.component';
 import {SocketIoConfig, SocketIoModule} from 'ngx-socket-io';
-import { PlayerPanelComponent } from './scene/player-panel/player-panel.component';
+import {PlayerPanelComponent} from './scene/player-panel/player-panel.component';
+import { SumPipe } from './pipe/sum.pipe';
+import { MaxPipe } from './pipe/max.pipe';
+import { CountPipe } from './pipe/count.pipe';
+import { UniquePipe } from './pipe/unique.pipe';
 
 const config: SocketIoConfig = {url: 'http://localhost:8080', options: {}};
 
@@ -23,6 +27,10 @@ const config: SocketIoConfig = {url: 'http://localhost:8080', options: {}};
     SceneComponent,
     ScoresComponent,
     PlayerPanelComponent,
+    SumPipe,
+    MaxPipe,
+    CountPipe,
+    UniquePipe,
   ],
   imports: [
     BrowserModule,

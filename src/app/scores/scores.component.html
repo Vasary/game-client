@@ -6,16 +6,16 @@
       <th scope="col">Nickname</th>
       <th scope="col">Total hits</th>
       <th scope="col">Max strike</th>
-      <th scope="col">Rest health</th>
+      <th scope="col">Attacked enemies</th>
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let score of scores; let i = index">
+    <tr *ngFor="let score of getStatistics(); let i = index">
       <td>{{ i + 1 }}</td>
-      <td>{{ score.triggerId   }}</td>
-      <td>{{ score.targetId }}</td>
-      <td>{{ score.triggerHit }}</td>
-      <td>{{ score.targetHealth }}</td>
+      <td>{{ score.player   }}</td>
+      <td>{{ score.hits | sum  }}</td>
+      <td>{{ score.hits | max  }}</td>
+      <td>{{ score.attackedEnemies | unique | count  }}</td>
     </tr>
     </tbody>
   </table>
