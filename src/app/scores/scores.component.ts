@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {Score} from "../model/scores/score";
 
 interface State {
@@ -14,6 +14,7 @@ interface State {
 })
 export class ScoresComponent {
   @Input() scores: Score[] = [];
+  @Output() output: EventEmitter<true> = new EventEmitter();
 
   getStatistics() {
     let statistic: State[] = [];
@@ -40,5 +41,9 @@ export class ScoresComponent {
     });
 
     return statistic;
+  }
+
+  restart() {
+    this.output.emit(true);
   }
 }

@@ -57,6 +57,8 @@ export class SceneComponent implements OnInit {
       this.openScoresTable(scores);
       this.stopGame();
     })
+
+    this.api.gameRestarted().subscribe(() => location.reload());
   }
 
   isGameOver(): boolean {
@@ -88,6 +90,10 @@ export class SceneComponent implements OnInit {
     serverScores.scores.forEach(serverScore => scores.push(createScore(serverScore)))
 
     scoresComponent.componentInstance.scores = scores;
+    scoresComponent.componentInstance.output.subscribe((receivedEntry: any) => {
+      this.api.restartGame()
+      this.player = null;
+    })
   }
 
   private applyAttackAnimation(unit: Unit): void {

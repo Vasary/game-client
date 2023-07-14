@@ -28,6 +28,10 @@ export class ApiService {
     this.socket.emit('unit.attack');
   }
 
+  restartGame() {
+    this.socket.emit('game.restart');
+  }
+
   player(): Observable<PlayerType> {
     return new Observable((observer: Observer<PlayerType>) => {
       this.socket.on('player.join', (message: PlayerType) => {
@@ -55,6 +59,14 @@ export class ApiService {
   scores(): Observable<ServerScores> {
     return new Observable((observer: Observer<ServerScores>) => {
       this.socket.on('game.over', (message: ServerScores) => {
+        observer.next(message)
+      })
+    })
+  }
+
+  gameRestarted(): Observable<ServerScores> {
+    return new Observable((observer: Observer<ServerScores>) => {
+      this.socket.on('game.restarted', (message: ServerScores) => {
         observer.next(message)
       })
     })
